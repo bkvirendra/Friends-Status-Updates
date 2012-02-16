@@ -26,23 +26,24 @@ $loginUrl   = $facebook->getLoginUrl(
 ));
 	
 $logoutUrl  = $facebook->getLogoutUrl();
+?>
 
-echo "Hi ";
-$access_token = $facebook->getAccessToken();
-echo $access_token;
-echo "<br>";
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Your Friends Status Updates</title>
+</head>
+<body>
+<center><h1>Your Friends Status Updates</h1></center>
 
-$query = "Select uid, message from status where uid in (select uid2 from friend where uid1 = me() limit 10)";
-$multiquery = "https://graph.facebook.com/fql?q=" . rawurlencode($query) . "&access_token=" . $access_token;
-echo $multiquery;
-
-$json = get_data($multiquery);
-
-$info = json_decode($json, true) ;
-// debug, if json_decode fails
-// $error = json_last_error(); echo $error; exit;  
-// debug, check structure result
-//echo "<pre>"; print_r($info ); echo "</pre>"; exit; 
+<?php if ($user){
+           echo $user_profile['name'];
+	     } else {
+		   echo "Please Login <br>";
+		   echo $loginUrl;
+        } ?>
+<?php if ($user) { ?>		
+<?php
 
 function get_data($multiquery) { 
   $ch = curl_init();
@@ -54,6 +55,19 @@ function get_data($multiquery) {
   curl_close($ch);
   return $data;
 }
+
+$access_token = $facebook->getAccessToken();
+
+$query = "Select uid, message from status where uid in (select uid2 from friend where uid1 = me() limit 50)";
+$multiquery = "https://graph.facebook.com/fql?q=" . rawurlencode($query) . "&access_token=" . $access_token;
+
+$json = get_data($multiquery);
+
+$info = json_decode($json, true) ;
+// debug, if json_decode fails
+// $error = json_last_error(); echo $error; exit;  
+// debug, check structure result
+//echo "<pre>"; print_r($info ); echo "</pre>"; exit; 
 
 $final = array();
 foreach( $info['data'] as $status ) {
@@ -68,12 +82,15 @@ foreach( $info['data'] as $status ) {
 
                      $pageContent = file_get_contents('http://graph.facebook.com/'.$fid);
                      $parsedJson  = json_decode($pageContent);
-                     $name = $parsedJson->name;
-					 echo $name;
 
-					 echo "<p><li><img src=\"http://graph.facebook.com/$fid/picture\">";
-                     echo '<a target=\"_blank\" href="http://www.facebook.com/profile.php?id='.$fid.'">'.$name.'</a>';
+					 echo "<p><li>";
+                     echo '<a target=\"_blank\" href="http://www.facebook.com/profile.php?id='.$fid.'"><img src=\"http://graph.facebook.com/$fid/picture\"></a><br>';
+                     echo $parsedJson->name;
+					 echo ':-';
 					 echo $message;
 					 echo "</p></li><br>";	
 }
 ?>
+<?php } ?>
+</body>
+</html>
