@@ -1,10 +1,15 @@
 <?php
+/*
+    Demo App By :- Virendra Rajput 
+	HomePage :- www.teckzone.in
+	Feb 18, 2012
+*/
 
-require 'facebook.php';
+require 'facebook.php'; 
 
 $facebook = new Facebook(array(
-    'appId'  => ' ',
-    'secret' => ' '
+    'appId' => ' ',    //Your App ID
+    'secret' => ' '    //Your App Secret
 ));
 
 $user = $facebook->getUser();
@@ -19,33 +24,75 @@ if ($user) {
   }
 }
 
-$loginUrl   = $facebook->getLoginUrl(
+$loginUrl = $facebook->getLoginUrl(
             array(
-                'scope'         => 'read_stream',
-                'redirect_uri'  => 'http://apps.facebook.com/friends-status-on-fb/'
+                'scope' => 'read_stream',
+                'redirect_uri' => 'http://apps.facebook.com/friends-status-on-fb/' // Your Redirect URL
 ));
-	
-$logoutUrl  = $facebook->getLogoutUrl();
+
+$logoutUrl = $facebook->getLogoutUrl();
 ?>
 
 <!DOCTYPE HTML>
 <html>
 <head>
 <title>Your Friends Status Updates</title>
+<style type="text/css">
+body {
+	background-color:rgb(102,131,244);
+	font-family:Tahoma, Geneva, sans-serif;
+}
+h1 {
+	alignment-adjust:central;
+	font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif;
+	font-size:36px;
+	color:#EEEEEE;
+	text-align:center;
+}
+p {
+	color:#000000;
+}
+h2 {
+	color:#EEEEEE;
+	font-style:normal;
+	font-family:Tahoma, Geneva, sans-serif;
+	font-size:24px;
+	text-align:center;
+}
+    * {
+    margin: 1;
+    }
+    html, body {
+    height: 100%;
+    }
+    .wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -4em;
+    }
+    .footer, .push {
+    height: 4em;
+    }
+</style>
 </head>
 <body>
-<center><h1>Your Friends Status Updates</h1></center>
-
+<div class="wrapper">
+<h1>Your Friends Status Updates</h1>
 <?php if ($user){
-           echo $user_profile['name'];
-	     } else {
-		   echo "Please Login <br>";
-		   echo $loginUrl;
-        } ?>
-<?php if ($user) { ?>		
+           echo "<h2>Welcome ".$user_profile['name'];
+		   echo "</h2><br>";
+} else {
+echo "<h2>Please Login <br><br>";
+?> 
+<a href="<?php echo $loginUrl; ?>" target="_blank">Click here</a>
+</h2>
+<?php } ?>
+
+<?php if ($user) { ?>
 <?php
 
-function get_data($multiquery) { 
+function get_data($multiquery) {
   $ch = curl_init();
   $timeout = 5;
   curl_setopt($ch,CURLOPT_URL,$multiquery);
@@ -58,39 +105,41 @@ function get_data($multiquery) {
 
 $access_token = $facebook->getAccessToken();
 
-$query = "Select uid, message from status where uid in (select uid2 from friend where uid1 = me() limit 50)";
+$query = "Select uid, message from status where uid in (select uid2 from friend where uid1 = me() limit 20)";
 $multiquery = "https://graph.facebook.com/fql?q=" . rawurlencode($query) . "&access_token=" . $access_token;
 
 $json = get_data($multiquery);
 
 $info = json_decode($json, true) ;
 // debug, if json_decode fails
-// $error = json_last_error(); echo $error; exit;  
+// $error = json_last_error(); echo $error; exit;
 // debug, check structure result
-//echo "<pre>"; print_r($info ); echo "</pre>"; exit; 
+//echo "<pre>"; print_r($info ); echo "</pre>"; exit;
 
-$final = array();
 foreach( $info['data'] as $status ) {
-    $fid = $status['uid'];
-	$message = $status['message'];
+$fid = $status['uid'];
+$message = $status['message'];
 
-				    // URLs (from http://www.phpro.org/examples/URL-to-Link.html)
-					$message = preg_replace("/([\w]+:\/\/[\w-?&;#~=\.\/\@]+[\w\/])/i","<a target=\"_blank\" href=\"$1\" target=\"_blank\">$1</a>",$message);
+// URLs (from http://www.phpro.org/examples/URL-to-Link.html)
+$message = preg_replace("/([\w]+:\/\/[\w-?&;#~=\.\/\@]+[\w\/])/i","<a target=\"_blank\" href=\"$1\" target=\"_blank\">$1</a>",$message);
 
-					// hash tags map to search?q=#hash
-					$message = preg_replace('/(#)(\S+)/i',"<a target=\"_blank\" href=\"http://facebook.com/search?q=%23$2\" target=\"_blank\">$1$2</a>",$message);	
+// hash tags map to search?q=#hash
+$message = preg_replace('/(#)(\S+)/i',"<a target=\"_blank\" href=\"http://facebook.com/search?q=%23$2\" target=\"_blank\">$1$2</a>",$message);
 
-                     $pageContent = file_get_contents('http://graph.facebook.com/'.$fid);
-                     $parsedJson  = json_decode($pageContent);
-
-					 echo "<p><li>";
-                     echo '<a target=\"_blank\" href="http://www.facebook.com/profile.php?id='.$fid.'"><img src=\"http://graph.facebook.com/$fid/picture\"></a><br>';
-                     echo $parsedJson->name;
-					 echo ':-';
-					 echo $message;
-					 echo "</p></li><br>";	
+//Displaying the statuses of friends
+echo "<p><br>";
+echo '<br>';
+echo '<a target=\"_blank\" href="http://www.facebook.com/profile.php?id='.$fid.'"><img src="http://graph.facebook.com/'.$fid.'/picture"></a>';
+echo "<br>";
+echo $message;
+echo "</p><br>";
 }
 ?>
 <?php } ?>
+<div class="push"></div>
+</div>
+<div class="footer" align="center">
+   <p>Developed By <a href="www.teckzone.in" target="_blank">TeckZone</a></p>
+</div>
 </body>
 </html>
