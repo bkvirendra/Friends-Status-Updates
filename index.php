@@ -1,8 +1,9 @@
 <?php
 /*
     Demo App By :- Virendra Rajput 
-	HomePage :- www.teckzone.in
-	Feb 18, 2012
+    Read more about it here :- http://teckzone.in/blog/2012/02/friends-status-sample-iframe-base-facebook-app-using-php-sdk-v-3-1-1/
+    HomePage :- www.teckzone.in
+    Created on Feb 18, 2012
 */
 
 require 'facebook.php'; 
@@ -139,7 +140,7 @@ echo "</p><br>";
 <div class="push"></div>
 </div>
 <div class="footer" align="center">
-   <p>Developed By <a href="www.teckzone.in" target="_blank">TeckZone</a></p>
+   <p>Developed By <a href="http://www.teckzone.in" target="_blank">TeckZone</a></p>
 </div>
 </body>
 </html>
